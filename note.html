@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Note App</title>
+
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-900 to-green-600 dark:from-gray-900 dark:to-black font-sans transition-colors">
+
+  
+  <div class="flex flex-col items-center pt-6">
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white dark:text-gray-100 mb-2 drop-shadow-lg">
+      My Notes
+    </h1>
+    <p class="text-white/80 dark:text-gray-300 mb-6">Double click on a note to remove it</p>
+    <button id="toggle-dark"
+      class="px-5 py-2 rounded-xl bg-white/20 dark:bg-gray-700/40 text-white dark:text-gray-100 font-semibold hover:bg-white/40 dark:hover:bg-gray-700 transition-all">
+      Toggle Dark Mode
+    </button>
+  </div>
+
+
+  <div id="app" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center p-10">
+    
+    
+    <button id="btn"
+      class="h-56 w-full border-2 border-white/30 dark:border-gray-600 bg-white/20 dark:bg-gray-700/30 rounded-2xl text-7xl font-bold text-white/50 dark:text-gray-200 cursor-pointer hover:bg-white/40 dark:hover:bg-gray-600/50 transition-all flex items-center justify-center shadow-lg">
+      +
+    </button>
+  </div>
+
+<script>
+  const btn = document.getElementById('btn');
+  const app = document.getElementById('app');
+
+ 
+  function getNotes() { return JSON.parse(localStorage.getItem('notes') || '[]'); }
+  function saveNotes(notes) { localStorage.setItem('notes', JSON.stringify(notes)); }
+
+ 
+  function renderNotes() {
+   n
+    app.innerHTML = '';
+    const notes = getNotes();
+  
+    notes.sort((a, b) => {
+      if ((a.pinned ? 1 : 0) === (b.pinned ? 1 : 0)) return b.id - a.id;
+      return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+    });
+
+    
+    notes.forEach(note => {
+      const noteEl = createNoteElement(note.id, note.content, note.pinned);
+      app.appendChild(noteEl);
+    });
+
+   
+    app.appendChild(btn);
+  }
+
+  
+  renderNotes();
+
+  function createNoteElement(id, content, pinned = false) {
+    s
+    const container = document.createElement('div');
+    container.className = 'relative note-wrapper';
+    container.dataset.id = id;
+
+    
+    const pinBtn = document.createElement('button');
+    pinBtn.className = 'absolute top-2 right-2 z-10 text-lg';
+    pinBtn.innerHTML = pinned ? '📌' : '📍';
+    pinBtn.title = pinned ? 'Unpin note' : 'Pin note';
+    pinBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePin(id);
+    });
+
+ 
+    const element = document.createElement('textarea');
+    element.className =
+      "note w-full p-4 rounded-2xl min-h-[140px] resize-none outline-none border border-white/20 dark:border-gray-600 ";
+    element.className += pinned
+      ? " text-black dark:text-white bg-yellow-50 dark:bg-yellow-900/30 placeholder-gray-400 dark:placeholder-gray-300 shadow-lg backdrop-blur-md hover:shadow-2xl transition-all"
+      : " text-black dark:text-white bg-white/30 dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-300 shadow-lg backdrop-blur-md hover:shadow-2xl transition-all";
+    element.placeholder = 'Empty Note';
+    element.value = content;
+    element.rows = 6;
+
+    element.addEventListener('dblclick', () => {
+      if (confirm('Do you want to delete this note?')) deleteNote(id);
+    });
+    element.addEventListener('input', () => updateNote(id, element.value));
+
+    container.appendChild(pinBtn);
+    container.appendChild(element);
+    return container;
+  }
+
+  function deleteNote(id) {
+    const notes = getNotes().filter(note => note.id != id);
+    saveNotes(notes);
+    renderNotes();
+  }
+
+  function updateNote(id, content) {
+    const notes = getNotes();
+    const target = notes.find(note => note.id == id);
+    if (target) {
+      target.content = content;
+      saveNotes(notes);
+    }
+  }
+
+  function addNote() {
+    const notes = getNotes();
+    const noteObj = { id: Date.now(), content: '', pinned: false };
+    notes.push(noteObj);
+    saveNotes(notes);
+    renderNotes();
+  }
+
+  btn.addEventListener('click', addNote);
+
+  
+  function togglePin(id) {
+    const notes = getNotes();
+    const target = notes.find(n => n.id == id);
+    if (!target) return;
+    target.pinned = !target.pinned;
+    saveNotes(notes);
+    renderNotes();
+  }
+
+  
+  (function() {
+    const toggle = document.getElementById('toggle-dark');
+    const userPref = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        toggle.textContent = 'Switch to Light';
+      } else {
+        document.documentElement.classList.remove('dark');
+        toggle.textContent = 'Switch to Dark';
+      }
+    }
+
+    if (userPref) applyTheme(userPref);
+    else applyTheme(prefersDark ? 'dark' : 'light');
+
+    toggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      const theme = isDark ? 'dark' : 'light';
+      localStorage.setItem('theme', theme);
+      applyTheme(theme);
+    });
+  })();
+</script>
+</body>
+</html>

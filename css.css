@@ -1,0 +1,40 @@
+body{
+    background-image: url(sun.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.menu{
+    position: absolute;
+    top: 50%;
+    left: 15%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: min-content;  
+}
+.menu a{
+    display: block;
+    font-family: 'league gothic',Arial, Helvetica, sans-serif;
+    font-size: 5vmin;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: var(--menu);
+    padding: .5rem 0;
+    transform: scale(0.95);
+    opacity: .25;
+    transition: scale 550s linear, opacity 250ms linear;
+}
+.menu a:first-of-type{
+    transform: scale(1);
+    opacity: 1;
+}
+.menu a:hover a:not(:hover){
+    transform: scale(0.95);
+    opacity: .25;
+}
+.menu a:hover{
+    transform: scale(1);
+    opacity: 1;
+}

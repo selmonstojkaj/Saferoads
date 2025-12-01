@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>News Forum</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      padding: 2rem;
+    }
+    h1 {
+      margin: 0 0 1rem 0;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    input, textarea {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    button {
+      background: #2980b9;
+      color: #fff;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #1c5980;
+    }
+    .news-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .news-item {
+      border-bottom: 1px solid #e1e4e8;
+      padding: 1rem 0;
+    }
+    .news-item:last-child {
+      border-bottom: none;
+    }
+    .news-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 0 0 0.3rem 0;
+    }
+    .news-meta {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .news-content {
+      margin: 0.5rem 0 0 0;
+    }
+    .comment-section {
+      margin-top: 1rem;
+      padding-left: 1rem;
+      border-left: 2px solid #e1e4e8;
+    }
+    .comment-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0 0;
+    }
+    .comment-item {
+      margin-bottom: 0.5rem;
+      background: #f8fafd;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+    .comment-meta {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .comment-content {
+      margin-top: 0.2rem;
+    }
+    .add-comment-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .add-comment-form input, .add-comment-form textarea {
+      flex: 1;
+      font-size: 0.95rem;
+    }
+    @media (max-width: 600px) {
+      main {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>News Forum</h1>
+    <p>Share and discuss the latest news!</p>
+  </header>
+  <main>
+    <section>
+      <h2>Post a News Article</h2>
+      <form id="newsForm">
+        <input type="text" id="newsTitle" placeholder="Title" required>
+        <textarea id="newsContent" rows="4" placeholder="Content" required></textarea>
+        <input type="text" id="newsAuthor" placeholder="Your Name" required>
+        <button type="submit">Post News</button>
+      </form>
+    </section>
+    <section>
+      <h2>Latest News</h2>
+      <ul class="news-list" id="newsList"></ul>
+    </section>
+  </main>
+  <script>
+    // Helper: get and set from localStorage
+    function getNews() {
+      return JSON.parse(localStorage.getItem('newsForumNews') || '[]');
+    }
+    function saveNews(news) {
+      localStorage.setItem('newsForumNews', JSON.stringify(news));
+    }
+
+    // Render all news
+    function renderNews() {
+      const newsList = document.getElementById('newsList');
+      const news = getNews();
+      newsList.innerHTML = '';
+      if (news.length === 0) {
+        newsList.innerHTML = '<li>No news articles yet. Be the first to post!</li>';
+        return;
+      }
+      news.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'news-item';
+        li.innerHTML = `
+          <div class="news-title">${escapeHTML(item.title)}</div>
+          <div class="news-meta">By ${escapeHTML(item.author)} &middot; ${new Date(item.date).toLocaleString()}</div>
+          <div class="news-content">${escapeHTML(item.content)}</div>
+          <div class="comment-section">
+            <strong>Comments</strong>
+            <ul class="comment-list" id="commentList-${idx}">
+              ${item.comments.map(c => `
+                <li class="comment-item">
+                  <div class="comment-meta">${escapeHTML(c.author)} &middot; ${new Date(c.date).toLocaleString()}</div>
+                  <div class="comment-content">${escapeHTML(c.content)}</div>
+                </li>
+              `).join('')}
+            </ul>
+            <form class="add-comment-form" data-news-idx="${idx}">
+              <input type="text" name="author" placeholder="Your Name" required>
+              <input type="text" name="content" placeholder="Add a comment..." required>
+              <button type="submit">Comment</button>
+            </form>
+          </div>
+        `;
+        newsList.appendChild(li);
+      });
+
+      // Attach comment form listeners
+      document.querySelectorAll('.add-comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const idx = this.getAttribute('data-news-idx');
+          const author = this.author.value.trim();
+          const content = this.content.value.trim();
+          if (!author || !content) return;
+          const news = getNews();
+          news[idx].comments.push({
+            author,
+            content,
+            date: new Date().toISOString()
+          });
+          saveNews(news);
+          renderNews();
+        });
+      });
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+
+    // Handle news form submission
+    document.getElementById('newsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('newsTitle').value.trim();
+      const content = document.getElementById('newsContent').value.trim();
+      const author = document.getElementById('newsAuthor').value.trim();
+      if (!title || !content || !author) return;
+      const news = getNews();
+      news.unshift({
+        title,
+        content,
+        author,
+        date: new Date().toISOString(),
+        comments: []
+      });
+      saveNews(news);
+      this.reset();
+      renderNews();
+    });
+
+    // Initial render
+    renderNews();
+  </script>
+</body>
+</html>
