@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="cssSettings.css">
+    <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+/>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">SafeRoads</div>
+      <nav class="nav">
+        <a href="#">Dashboard</a>
+        <a href="#">Map View</a>
+        <a href="#">Incidents</a>
+        <a href="#">Units</a>
+        <a href="#">Notifications</a>
+        <a href="#" class="active" >Settings</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-left"></div>
+        <div class="topbar-right">
+          <button class="icon-btn" aria-label="Notifications">
+            <i class="fa-regular fa-bell"></i>
+          </button>
+          <button class="icon-btn" aria-label="Login">
+            <i class="fa-regular fa-user"></i>
+          </button>
+        </div>
+      </div>
+      <header>
+        <div class="header">
+          <h1 class="h1" style="color: black;">Settings</h1>
+        </div>
+      </header>
+
+      <!-- existing settings content -->
+      <div class="container">
+        <button class="tab">Users</button>
+        <button class="tab active">Security</button>
+        <button class="tab">Activity logs</button>
+        <button class="tab">General</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3>Authorized Personnel</h3>
+        <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn" id="addUserBtn">Add User</button>
+        <button class="ghost">Export</button>
+        </div>
+        </div>
+
+        <div class="user-list">
+        <div class="user-row">
+        <div class="user-meta">
+        <div class="avatar">JS</div>
+        <div class="user-info">
+        <div class="name">Officer J. Smith</div>
+        <div class="badge">#1234 • j.smith@police.gov</div>
+        </div>
+        </div>
+
+
+
+
+        <div class="chips">
+        <div class="chip">Admin</div>
+        <div class="status">Active</div>
+        </div>
+
+        <div class="right-actions">
+        <div class="badge" style="font-size:13px;color:var(--muted)">5 min ago</div>
+        <button class="ghost" title="View">👁️</button>
+        </div>
+        </div>
+
+        <!-- Placeholder empty rows to mimic the sketch -->
+        <div style="height:70px;border-radius:8px;background:linear-gradient(90deg,#fff,#fafbff);border:1px dashed #eef2f8"></div>
+
+        </div>
+        </div>
+
+        <div class="card permissions">
+          <div class="left">
+            <div style="font-weight:600;margin-bottom:8px">Role Permissions</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="role-card" type="button">
+                <div class="title">Admin</div>
+                <button class="role-chip" type="button">Manage Users</button>
+                <button class="role-chip" type="button">Manage Settings</button>
+                <button class="role-chip" type="button">View Logs</button>
+              </button>
+
+              <button class="role-card" type="button">
+                <div class="title">Field Officer</div>
+                <button class="role-chip" type="button">View Incidents</button>
+                <button class="role-chip" type="button">Update Status</button>
+              </button>
+            </div>
+          </div>
+          <div class="right">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <button class="role-card" type="button"><div class="title">Dispatcher</div></button>
+              <button class="role-card" type="button"><div class="title">Doctor</div></button>
+            </div>
+          </div>
+        </div>
+
+        </main>
+      </div>
+
+
+
+<!-- Role Permission Modal -->
+<div id="roleModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2 id="modalRoleName">Role</h2>
+
+    <div id="modalPermissions">
+      <!-- Permissions injected dynamically -->
+    </div>
+
+    <button class="btn">Save Changes</button>
+  </div>
+</div>
+
+
+
+<script>
+const roles = {
+  "Admin": ["Manage Users", "Manage Settings", "View Logs"],
+  "Field Officer": ["View Incidents", "Update Status"],
+  "Dispatcher": ["Dispatch Units", "Assign Calls"],
+  "Doctor": ["View Medical Data", "Update Medical Reports"]
+};
+
+// Open modal when clicking role-card
+document.querySelectorAll(".role-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const role = card.querySelector(".title").innerText;
+    document.getElementById("modalRoleName").innerText = role;
+
+    const permissions = roles[role] || [];
+
+    document.getElementById("modalPermissions").innerHTML =
+      permissions.map(p => `<div class="role-chip">${p}</div>`).join("");
+
+    roleModal.style.display = "block";
+  });
+});
+
+// Close modal
+closeBtn.onclick = () => roleModal.style.display = "none";
+window.onclick = e => { if (e.target == roleModal) roleModal.style.display = "none"; };
+</script>
+
+</body>
+</html>
