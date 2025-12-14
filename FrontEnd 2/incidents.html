@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SafeRoads — Incidents</title>
+<link rel="stylesheet" href="cssDashboard.css" />
+<script src="jsDashboard.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+/>
+<style>
+/* Enhanced Stats Cards */
+.stats .stat {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.stats .stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(15, 23, 36, 0.12);
+  border-color: rgba(11,118,239,0.1);
+}
+
+/* Professional Search Bar */
+.search-bar {
+  margin-top: 10px; 
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: var(--card);
+  padding: 10px 10px;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(15, 23, 36, 0.06);
+}
+.search-bar-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+.search-bar-wrapper i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 13px;
+  pointer-events: none;
+}
+.search-bar input {
+  width: 100%;
+  padding: 6px 12px 6px 32px;
+  border-radius: 8px;
+  border: 1px solid #e6eefb;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+  line-height: 1.4;
+}
+.search-bar input:hover {
+  border-color: #cbd5e1;
+  background: #fff;
+}
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(11,118,239,0.1);
+  background: #fff;
+}
+.search-bar .filter {
+  transition: all 0.3s ease;
+}
+.search-bar .filter:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11,118,239,0.15);
+}
+
+/* Enhanced Table */
+table {
+  transition: all 0.3s ease;
+}
+table tbody tr {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+table tbody tr:hover {
+  background-color: #f8fafc;
+  transform: scale(1.01);
+}
+table tbody tr:active {
+  transform: scale(0.99);
+}
+table th {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  padding: 16px 12px;
+}
+table td {
+  padding: 14px 12px;
+  vertical-align: middle;
+}
+
+/* Enhanced Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.status-badge i {
+  font-size: 10px;
+}
+.status-new {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: var(--accent);
+  border: 1px solid rgba(11,118,239,0.15);
+}
+.status-progress, .status-in-progress {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--warn);
+  border: 1px solid rgba(180,83,9,0.15);
+}
+.status-resolved {
+  background: linear-gradient(135deg, #e6ffef 0%, #d1fae5 100%);
+  color: var(--ok);
+  border: 1px solid rgba(4,120,87,0.15);
+}
+.status-awaiting {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: var(--muted);
+  border: 1px solid rgba(107,114,128,0.15);
+}
+
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.severity-badge i {
+  font-size: 10px;
+}
+.severity-critical {
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+  color: var(--danger);
+  border: 1px solid rgba(185,28,28,0.15);
+}
+.severity-high {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--warn);
+  border: 1px solid rgba(180,83,9,0.15);
+}
+.severity-medium {
+  background: linear-gradient(135deg, #e6ffef 0%, #d1fae5 100%);
+  color: var(--ok);
+  border: 1px solid rgba(4,120,87,0.15);
+}
+.severity-low {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: var(--muted);
+  border: 1px solid rgba(107,114,128,0.15);
+}
+
+/* Enhanced Action Buttons */
+.actions-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.view-detail-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, #0a66d9 100%);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(11,118,239,0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.view-detail-btn i {
+  font-size: 12px;
+}
+.view-detail-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11,118,239,0.3);
+}
+.view-detail-btn:active {
+  transform: translateY(0);
+}
+.actions-group .filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.actions-group .filter i {
+  font-size: 12px;
+}
+
+/* Enhanced Incident Detail Modal */
+.incident-detail {
+  background: var(--card);
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(15, 23, 36, 0.06);
+  margin-bottom: 16px;
+  border: 1px solid rgba(0,0,0,0.04);
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.incident-detail h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  color: var(--accent);
+  padding-bottom: 12px;
+  border-bottom: 2px solid #eef2f7;
+}
+.incident-detail .detail-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s ease;
+}
+.incident-detail .detail-row:hover {
+  background-color: #fafbfc;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 6px;
+}
+.incident-detail .detail-row:last-child {
+  border-bottom: none;
+}
+.incident-detail .detail-label {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.incident-detail .detail-label i {
+  font-size: 14px;
+  color: var(--accent);
+}
+.incident-detail .detail-value {
+  font-size: 14px;
+  color: #1e2e38;
+  line-height: 1.6;
+}
+
+/* Professional Modals */
+#incidentDetailModal .modal-content,
+#createIncidentModal .modal-content {
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+#incidentDetailModal .modal-content h2,
+#createIncidentModal .modal-content h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent);
+  color: var(--accent);
+}
+#incidentDetailModal .modal-content h2 i,
+#createIncidentModal .modal-content h2 i {
+  font-size: 22px;
+}
+
+/* Enhanced Form Inputs */
+#createIncidentModal .modal-content label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e2e38;
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+#createIncidentModal .modal-content label:first-of-type {
+  margin-top: 0;
+}
+#createIncidentModal .modal-content label i {
+  color: var(--accent);
+  font-size: 14px;
+}
+#createIncidentModal .modal-content input,
+#createIncidentModal .modal-content select,
+#createIncidentModal .modal-content textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e6eefb;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+  font-family: inherit;
+}
+#createIncidentModal .modal-content input:hover,
+#createIncidentModal .modal-content select:hover,
+#createIncidentModal .modal-content textarea:hover {
+  border-color: #cbd5e1;
+  background: #fff;
+}
+#createIncidentModal .modal-content input:focus,
+#createIncidentModal .modal-content select:focus,
+#createIncidentModal .modal-content textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(11,118,239,0.1);
+  background: #fff;
+}
+#createIncidentModal .modal-content textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+/* Section Header */
+section > div:first-child {
+  background: var(--card);
+  padding: 16px 20px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: 2px solid #eef2f7;
+  margin-bottom: 0;
+}
+section > div:first-child h3 {
+  color: #1e2e38;
+  font-size: 18px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<aside class="sidebar">
+<div class="brand">SafeRoads</div>
+<nav class="nav">
+<a href="dashboard.html">Dashboard</a>
+<a href="#">Map View</a>
+<a href="incidents.html" style="background: rgba(255, 255, 255, 0.12); color: #fff;">Incidents</a>
+<a href="#">Units</a>
+<a href="#">Notifications</a>
+<a href="#">Settings</a>
+</nav>
+</aside>
+
+<main class="main">
+
+<div class="topbar">
+  <div class="topbar-left"></div>
+  <div class="topbar-right">
+    <button class="icon-btn" aria-label="Notifications">
+      <i class="fa-regular fa-bell"></i>
+    </button>
+    <button class="icon-btn" aria-label="Login">
+      <i class="fa-regular fa-user"></i>
+    </button>
+  </div>
+</div>
+
+<div class="top">
+<div>
+<div class="title">Incidents</div>
+<div class="subtitle">Manage and track all incidents</div>
+</div>
+<div class="actions">
+<button onclick="openCreateIncident()"><i class="fa-solid fa-plus"></i> New Incident</button>
+<button onclick="exportIncidents()"><i class="fa-solid fa-download"></i> Export</button>
+</div>
+</div>
+
+<div class="stats" aria-hidden="false">
+<div class="stat">
+<h3>Total Incidents</h3>
+<p id="totalIncidents">24</p>
+<div class="small">All time</div>
+</div>
+<div class="stat">
+<h3>Active Now</h3>
+<p id="activeIncidents">12</p>
+<div class="small">Requiring attention</div>
+</div>
+<div class="stat">
+<h3>Critical</h3>
+<p id="criticalIncidents">4</p>
+<div class="small">Immediate action needed</div>
+</div>
+<div class="stat">
+<h3>Resolved Today</h3>
+<p id="resolvedToday">8</p>
+<div class="small">+2 from yesterday</div>
+</div>
+</div>
+
+<div class="search-bar">
+<div class="search-bar-wrapper">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="text" id="searchInput" placeholder="Search by ID, type, location..." onkeyup="filterIncidents()">
+</div>
+<select id="severityFilter" class="filter" onchange="filterIncidents()">
+<option value="all">All Severities</option>
+<option value="Critical">Critical</option>
+<option value="High">High</option>
+<option value="Medium">Medium</option>
+<option value="Low">Low</option>
+</select>
+<select id="statusFilter" class="filter" onchange="filterIncidents()">
+<option value="all">All Statuses</option>
+<option value="New">New</option>
+<option value="In progress">In progress</option>
+<option value="Awaiting">Awaiting</option>
+<option value="Resolved">Resolved</option>
+</select>
+<button class="filter" onclick="clearFilters()">
+  <i class="fa-solid fa-xmark"></i> Clear
+</button>
+</div>
+
+<section>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<h3 style="margin:0">Incident List</h3>
+<div class="controls-row">
+<button onclick="addDemoIncident()" class="filter">+ Add Demo</button>
+</div>
+</div>
+
+<table aria-label="incidents table">
+<thead>
+<tr>
+<th>ID</th>
+<th>Type</th>
+<th>Location</th>
+<th>Severity</th>
+<th>Status</th>
+<th>Assigned Unit</th>
+<th>Reported</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="incidentsTableBody">
+<!-- Rows injected by JS -->
+</tbody>
+</table>
+</section>
+
+<!-- Incident Detail Modal -->
+<div id="incidentDetailModal" class="modal hidden">
+  <div class="modal-content" style="max-width: 650px; max-height: 90vh; overflow-y: auto;">
+    <h2>
+      <i class="fa-solid fa-circle-exclamation"></i>
+      Incident Details
+    </h2>
+    <div id="incidentDetailContent">
+      <!-- Content injected by JS -->
+    </div>
+    <div class="modal-actions" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #eef2f7;">
+      <button onclick="closeIncidentDetail()" class="cancel">
+        <i class="fa-solid fa-times"></i> Close
+      </button>
+      <button onclick="editIncident()" class="save">
+        <i class="fa-solid fa-pen"></i> Edit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Incident Modal -->
+<div id="createIncidentModal" class="modal hidden">
+  <div class="modal-content" style="max-width: 550px;">
+    <h2 id="modalTitle">
+      <i class="fa-solid fa-plus"></i>
+      <span>Create New Incident</span>
+    </h2>
+
+    <label>
+      <i class="fa-solid fa-tag"></i>
+      Incident Type
+    </label>
+    <input type="text" id="incType" placeholder="e.g., Traffic Accident, Medical Emergency" required>
+
+    <label>
+      <i class="fa-solid fa-location-dot"></i>
+      Location
+    </label>
+    <input type="text" id="incLocation" placeholder="Enter full address" required>
+
+    <label>
+      <i class="fa-solid fa-exclamation-triangle"></i>
+      Severity
+    </label>
+    <select id="incSeverity">
+      <option value="Low">Low</option>
+      <option value="Medium" selected>Medium</option>
+      <option value="High">High</option>
+      <option value="Critical">Critical</option>
+    </select>
+
+    <label>
+      <i class="fa-solid fa-clock"></i>
+      Status
+    </label>
+    <select id="incStatus">
+      <option value="New" selected>New</option>
+      <option value="In progress">In progress</option>
+      <option value="Awaiting">Awaiting</option>
+      <option value="Resolved">Resolved</option>
+    </select>
+
+    <label>
+      <i class="fa-solid fa-users"></i>
+      Assigned Unit (optional)
+    </label>
+    <input type="text" id="incUnit" placeholder="e.g., UNIT-001">
+
+    <label>
+      <i class="fa-solid fa-file-lines"></i>
+      Description
+    </label>
+    <textarea id="incDescription" rows="4" placeholder="Enter detailed description"></textarea>
+
+    <div class="modal-actions" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #eef2f7;">
+      <button onclick="closeCreateIncident()" class="cancel">
+        <i class="fa-solid fa-times"></i> Cancel
+      </button>
+      <button onclick="saveIncident()" class="save">
+        <i class="fa-solid fa-check"></i> Save Incident
+      </button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Extended incident data
+let incidents = [
+  { id:'INC-000', type:'Armed Robbery', loc:'123 Main St', severity:'Critical', status:'In progress', unit:'UNIT-000', time:'10 min ago', description:'Armed robbery reported at convenience store. Suspects fled in vehicle.', reportedBy:'Officer Smith', reportedAt:'2024-01-15 14:30' },
+  { id:'INC-001', type:'Vehicle Collision', loc:'Oak St / 5th Ave', severity:'High', status:'Awaiting', unit:'-', time:'18 min ago', description:'Two-vehicle collision with minor injuries. Traffic blocked.', reportedBy:'Dispatch', reportedAt:'2024-01-15 14:22' },
+  { id:'INC-002', type:'Medical Emergency', loc:'River Park', severity:'Medium', status:'Resolved', unit:'UNIT-001', time:'30 min ago', description:'Medical emergency - person collapsed. Ambulance responded.', reportedBy:'Citizen Report', reportedAt:'2024-01-15 14:00' },
+  { id:'INC-003', type:'Traffic Accident', loc:'Highway 20, Exit 5', severity:'High', status:'In progress', unit:'UNIT-002', time:'45 min ago', description:'Multi-vehicle pileup on highway. Multiple injuries reported.', reportedBy:'Highway Patrol', reportedAt:'2024-01-15 13:45' },
+  { id:'INC-004', type:'Fire Alarm', loc:'Downtown Plaza', severity:'Medium', status:'Awaiting', unit:'-', time:'1 hour ago', description:'Fire alarm activated. Building evacuated as precaution.', reportedBy:'Security System', reportedAt:'2024-01-15 13:30' },
+  { id:'INC-005', type:'Disturbance', loc:'City Park', severity:'Low', status:'Resolved', unit:'UNIT-000', time:'2 hours ago', description:'Noise complaint. Situation resolved peacefully.', reportedBy:'Citizen Report', reportedAt:'2024-01-15 12:30' }
+];
+
+let editingIncidentId = null;
+
+// Render incidents table
+function renderIncidents(filterSeverity = 'all', filterStatus = 'all', searchTerm = '') {
+  const tbody = document.getElementById('incidentsTableBody');
+  tbody.innerHTML = '';
+  
+  let filtered = incidents.filter(i => {
+    const severityMatch = filterSeverity === 'all' || i.severity === filterSeverity;
+    const statusMatch = filterStatus === 'all' || i.status === filterStatus;
+    const searchMatch = searchTerm === '' || 
+      i.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      i.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      i.loc.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return severityMatch && statusMatch && searchMatch;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">
+          <i class="fa-solid fa-inbox" style="font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.5;"></i>
+          <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">No incidents found</div>
+          <div style="font-size: 13px; opacity: 0.8;">Try adjusting your filters or search terms</div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  filtered.forEach(i => {
+    const tr = document.createElement('tr');
+    const severityIcon = i.severity === 'Critical' ? 'fa-solid fa-circle-exclamation' : 
+                        i.severity === 'High' ? 'fa-solid fa-triangle-exclamation' :
+                        i.severity === 'Medium' ? 'fa-solid fa-circle-info' : 'fa-solid fa-circle';
+    const statusIcon = i.status === 'New' ? 'fa-solid fa-circle' :
+                      i.status === 'In progress' ? 'fa-solid fa-spinner' :
+                      i.status === 'Resolved' ? 'fa-solid fa-check-circle' : 'fa-solid fa-clock';
+    const statusClass = i.status.toLowerCase().replace(' ', '-');
+    
+    tr.innerHTML = `
+      <td style="font-weight:700; color: var(--accent);">${i.id}</td>
+      <td><strong>${i.type}</strong></td>
+      <td><i class="fa-solid fa-location-dot" style="color: var(--muted); margin-right: 6px;"></i>${i.loc}</td>
+      <td><span class="severity-badge severity-${i.severity.toLowerCase()}"><i class="${severityIcon}"></i>${i.severity}</span></td>
+      <td><span class="status-badge status-${statusClass}"><i class="${statusIcon}"></i>${i.status}</span></td>
+      <td>${i.unit === '-' ? '<span style="color: var(--muted);">—</span>' : i.unit}</td>
+      <td><i class="fa-solid fa-clock" style="color: var(--muted); margin-right: 6px;"></i>${i.time}</td>
+      <td>
+        <div class="actions-group">
+          <button class="view-detail-btn" onclick="viewIncidentDetail('${i.id}')">
+            <i class="fa-solid fa-eye"></i> View
+          </button>
+          <button class="filter" onclick="editIncidentById('${i.id}')">
+            <i class="fa-solid fa-pen"></i> Edit
+          </button>
+          <button class="filter" onclick="resolveIncident('${i.id}')">
+            <i class="fa-solid fa-check"></i> Resolve
+          </button>
+          <button class="filter danger-btn" onclick="deleteIncident('${i.id}')">
+            <i class="fa-solid fa-trash"></i> Delete
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Update stats
+  updateStats();
+}
+
+// Update statistics
+function updateStats() {
+  document.getElementById('totalIncidents').textContent = incidents.length;
+  document.getElementById('activeIncidents').textContent = incidents.filter(x => x.status !== 'Resolved').length;
+  document.getElementById('criticalIncidents').textContent = incidents.filter(x => x.severity === 'Critical').length;
+  document.getElementById('resolvedToday').textContent = incidents.filter(x => x.status === 'Resolved').length;
+}
+
+// Filter incidents
+function filterIncidents() {
+  const severity = document.getElementById('severityFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const search = document.getElementById('searchInput').value;
+  renderIncidents(severity, status, search);
+}
+
+// Clear filters
+function clearFilters() {
+  document.getElementById('severityFilter').value = 'all';
+  document.getElementById('statusFilter').value = 'all';
+  document.getElementById('searchInput').value = '';
+  renderIncidents();
+}
+
+// View incident detail
+function viewIncidentDetail(id) {
+  const inc = incidents.find(i => i.id === id);
+  if (!inc) return;
+
+  const content = document.getElementById('incidentDetailContent');
+  const severityIcon = inc.severity === 'Critical' ? 'fa-solid fa-circle-exclamation' : 
+                      inc.severity === 'High' ? 'fa-solid fa-triangle-exclamation' :
+                      inc.severity === 'Medium' ? 'fa-solid fa-circle-info' : 'fa-solid fa-circle';
+  const statusIcon = inc.status === 'New' ? 'fa-solid fa-circle' :
+                    inc.status === 'In progress' ? 'fa-solid fa-spinner' :
+                    inc.status === 'Resolved' ? 'fa-solid fa-check-circle' : 'fa-solid fa-clock';
+  const statusClass = inc.status.toLowerCase().replace(' ', '-');
+  
+  content.innerHTML = `
+    <div class="incident-detail">
+      <h3><i class="fa-solid fa-circle-exclamation"></i> ${inc.id}</h3>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-tag"></i> Type:</div>
+        <div class="detail-value"><strong>${inc.type}</strong></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-location-dot"></i> Location:</div>
+        <div class="detail-value">${inc.loc}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-exclamation-triangle"></i> Severity:</div>
+        <div class="detail-value"><span class="severity-badge severity-${inc.severity.toLowerCase()}"><i class="${severityIcon}"></i>${inc.severity}</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-clock"></i> Status:</div>
+        <div class="detail-value"><span class="status-badge status-${statusClass}"><i class="${statusIcon}"></i>${inc.status}</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-users"></i> Assigned Unit:</div>
+        <div class="detail-value">${inc.unit === '-' ? '<span style="color: var(--muted);">Not assigned</span>' : inc.unit}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-user"></i> Reported By:</div>
+        <div class="detail-value">${inc.reportedBy || 'Unknown'}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-calendar"></i> Reported At:</div>
+        <div class="detail-value">${inc.reportedAt || inc.time}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label"><i class="fa-solid fa-file-lines"></i> Description:</div>
+        <div class="detail-value">${inc.description || '<span style="color: var(--muted);">No description provided</span>'}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('incidentDetailModal').classList.remove('hidden');
+}
+
+// Close incident detail
+function closeIncidentDetail() {
+  document.getElementById('incidentDetailModal').classList.add('hidden');
+}
+
+// Open create incident modal
+function openCreateIncident() {
+  editingIncidentId = null;
+  const titleEl = document.getElementById('modalTitle');
+  titleEl.innerHTML = '<i class="fa-solid fa-plus"></i><span>Create New Incident</span>';
+  document.getElementById('incType').value = '';
+  document.getElementById('incLocation').value = '';
+  document.getElementById('incSeverity').value = 'Medium';
+  document.getElementById('incStatus').value = 'New';
+  document.getElementById('incUnit').value = '';
+  document.getElementById('incDescription').value = '';
+  document.getElementById('createIncidentModal').classList.remove('hidden');
+}
+
+// Close create incident modal
+function closeCreateIncident() {
+  document.getElementById('createIncidentModal').classList.add('hidden');
+  editingIncidentId = null;
+}
+
+// Edit incident by ID
+function editIncidentById(id) {
+  const inc = incidents.find(i => i.id === id);
+  if (!inc) return;
+
+  editingIncidentId = id;
+  const titleEl = document.getElementById('modalTitle');
+  titleEl.innerHTML = '<i class="fa-solid fa-pen"></i><span>Edit Incident</span>';
+  document.getElementById('incType').value = inc.type;
+  document.getElementById('incLocation').value = inc.loc;
+  document.getElementById('incSeverity').value = inc.severity;
+  document.getElementById('incStatus').value = inc.status;
+  document.getElementById('incUnit').value = inc.unit === '-' ? '' : inc.unit;
+  document.getElementById('incDescription').value = inc.description || '';
+  document.getElementById('createIncidentModal').classList.remove('hidden');
+}
+
+// Save incident
+function saveIncident() {
+  const type = document.getElementById('incType').value.trim();
+  const location = document.getElementById('incLocation').value.trim();
+  const severity = document.getElementById('incSeverity').value;
+  const status = document.getElementById('incStatus').value;
+  const unit = document.getElementById('incUnit').value.trim() || '-';
+  const description = document.getElementById('incDescription').value.trim();
+
+  if (!type || !location) {
+    alert('Please fill in all required fields (Type and Location).');
+    return;
+  }
+
+  if (editingIncidentId) {
+    // Update existing
+    const inc = incidents.find(i => i.id === editingIncidentId);
+    if (inc) {
+      inc.type = type;
+      inc.loc = location;
+      inc.severity = severity;
+      inc.status = status;
+      inc.unit = unit;
+      inc.description = description;
+    }
+  } else {
+    // Create new
+    const id = 'INC-' + String(incidents.length).padStart(3, '0');
+    incidents.unshift({
+      id,
+      type,
+      loc: location,
+      severity,
+      status,
+      unit,
+      time: 'just now',
+      description,
+      reportedBy: 'Current User',
+      reportedAt: new Date().toLocaleString()
+    });
+  }
+
+  closeCreateIncident();
+  filterIncidents();
+}
+
+// Resolve incident
+function resolveIncident(id) {
+  const inc = incidents.find(i => i.id === id);
+  if (!inc) return;
+  
+  if (confirm(`Mark incident ${id} as resolved?`)) {
+    inc.status = 'Resolved';
+    filterIncidents();
+  }
+}
+
+// Delete incident
+function deleteIncident(id) {
+  const inc = incidents.find(i => i.id === id);
+  if (!inc) return;
+  
+  if (confirm(`Are you sure you want to delete incident ${id}? This action cannot be undone.`)) {
+    incidents = incidents.filter(i => i.id !== id);
+    filterIncidents();
+  }
+}
+
+// Add demo incident
+function addDemoIncident() {
+  const id = 'INC-' + String(incidents.length).padStart(3, '0');
+  const types = ['Traffic Accident', 'Medical Emergency', 'Fire Alarm', 'Robbery', 'Vehicle Collision', 'Disturbance'];
+  const locs = ['5th Ave', 'Oak St', 'Highway 20', 'Downtown', 'River Park', 'City Center'];
+  const sev = ['Low', 'Medium', 'High', 'Critical'];
+  const statuses = ['New', 'In progress', 'Awaiting'];
+  
+  const newInc = {
+    id,
+    type: types[Math.floor(Math.random() * types.length)],
+    loc: locs[Math.floor(Math.random() * locs.length)],
+    severity: sev[Math.floor(Math.random() * sev.length)],
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    unit: '-',
+    time: 'just now',
+    description: 'Demo incident created for testing purposes.',
+    reportedBy: 'System',
+    reportedAt: new Date().toLocaleString()
+  };
+  
+  incidents.unshift(newInc);
+  filterIncidents();
+}
+
+// Export incidents
+function exportIncidents() {
+  const dataStr = JSON.stringify(incidents, null, 2);
+  const dataBlob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'incidents-export-' + new Date().toISOString().split('T')[0] + '.json';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+// Edit incident from detail modal
+function editIncident() {
+  const modal = document.getElementById('incidentDetailModal');
+  const content = document.getElementById('incidentDetailContent');
+  const idMatch = content.innerHTML.match(/INC-\d+/);
+  if (idMatch) {
+    closeIncidentDetail();
+    editIncidentById(idMatch[0]);
+  }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  renderIncidents();
+  
+  // Close modals when clicking outside
+  window.onclick = function(event) {
+    const detailModal = document.getElementById('incidentDetailModal');
+    const createModal = document.getElementById('createIncidentModal');
+    if (event.target == detailModal) {
+      closeIncidentDetail();
+    }
+    if (event.target == createModal) {
+      closeCreateIncident();
+    }
+  };
+});
+</script>
+
+</body>
+</html>
+
